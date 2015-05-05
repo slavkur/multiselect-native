@@ -16,10 +16,11 @@ ul {
   li {
     padding-left: 5px;
     cursor: pointer;
+
+    &.selected {
+      background: #ccc;
+    }
   }
-}
-ul li.selected {
-  background: #ccc;
 }
 .selector {
   cursor: text;
@@ -37,7 +38,8 @@ ul li.selected {
     outline: none;
   }
   div {
-    background: #ccc;
+    background: #666;
+    color: #fff;
     white-space: nowrap;
     padding: 2px;
     margin: 3px 0 0 3px;

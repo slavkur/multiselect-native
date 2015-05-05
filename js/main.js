@@ -2,27 +2,38 @@ var keyDown = 40;
 var keyUp = 38;
 var keyEnter = 13;
 
-function xmlhttpreq() {
-  var xmlhttp;
-  try {
-    xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-  } catch (e) {
-    try {
-      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    } catch (E) {
-      xmlhttp = false;
-    }
+var XMLHttpFactories = [
+  function() {
+    return new XMLHttpRequest()
+  },
+  function() {
+    return new ActiveXObject("Msxml2.XMLHTTP")
+  },
+  function() {
+    return new ActiveXObject("Msxml3.XMLHTTP")
+  },
+  function() {
+    return new ActiveXObject("Microsoft.XMLHTTP")
   }
-  if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
-    xmlhttp = new XMLHttpRequest();
+];
+
+function createXMLHTTPObject() {
+  var xmlhttp = false;
+  for (var i = 0; i < XMLHttpFactories.length; i++) {
+    try {
+      xmlhttp = XMLHttpFactories[i]();
+    } catch (e) {
+      continue;
+    }
+    break;
   }
   return xmlhttp;
 }
 
 function request(url, callback) {
-  var http = xmlhttpreq();
+  var http = createXMLHTTPObject();
   http.open('GET', url, false);
-  http.onload = function() {
+  http.onreadystatechange = function() {
     if (http.status === 200) {
       callback(http, JSON.parse(http.response));
     }
@@ -46,7 +57,7 @@ function Selector(selector) {
   var dialog = selector.nextSibling;
   var dialogList = dialog.firstChild;
   var bodyBlur = function(e) {
-    dialog.style.display = null;
+    dialog.style.display = 'none';
   };
   // multiinstance events
   if(document.body.onclick instanceof Function) {
@@ -99,26 +110,21 @@ function Selector(selector) {
       var label = document.createElement('label');
       var del = document.createElement('i');
 
-      del.innerText = "x";
+      del.innerHTML = "x";
       del.onclick = function(e) {
         // stop bubbling to prevent focusing on selector
         e.stopPropagation();
         selector.removeChild(person);
-        added.splice(added.indexOf(e.target.previousSibling.innerText), 1);
-
-        document.body.onclick();
-        filter.blur();
+        added.splice(added.indexOf(e.target.previousSibling.innerHTML), 1);
+        clearFilter();
       };
       person.appendChild(label);
       person.appendChild(del);
       selector.insertBefore(person, filter);
-      label.innerText = selectedPerson.innerText;
-      added.push(selectedPerson.innerText);
+      label.innerHTML = selectedPerson.innerHTML;
+      added.push(selectedPerson.innerHTML);
 
-      document.body.onclick();
-      filter.blur();
-      filter.value = '';
-      People(list);
+      clearFilter();
     }
   };
   filter.onkeyup = function(e) {
@@ -132,24 +138,30 @@ function Selector(selector) {
         }
       }
       if (e.target.value.length === 0) {
-        People(list);
+        updateList(list);
       } else if(filtered.length === 0) {
         request('/api/people/'+ e.target.value, function(http, jsonResp) {
-          People(jsonResp);
+          updateList(jsonResp);
         });
       } else {
-        People(filtered);
+        updateList(filtered);
       }
     }
   }
 
-  function People(list) {
+  function clearFilter() {
+    document.body.onclick();
+    filter.blur();
+    filter.value = '';
+    updateList(list);
+  }
+
+  function updateList(list) {
     var cummulativeHeight = 0;
     dialogList.innerHTML = '';
     for (var i = 0; i < list.length; i++) {
       if(added.indexOf(list[i]) === -1) {
         var person = document.createElement('li');
-        var avatar = document.createElement('i');
         // self execution function to ensure the right 'person' is used
         (function(person) {
           person.onmouseover = function() {
@@ -163,9 +175,8 @@ function Selector(selector) {
             });
           };
         })(person);
-        person.innerText = list[i];
+        person.innerHTML = list[i];
         dialogList.appendChild(person);
-        person.insertBefore(avatar, person.firstChild);
         cummulativeHeight += person.clientHeight;
         if (i === 0) {
           selectedPerson = person;
@@ -177,7 +188,6 @@ function Selector(selector) {
   }
 
   function adjustDialogHeight(cummulativeHeight, hasItems) {
-    console.log(cummulativeHeight, dialog.clientHeight);
     if(cummulativeHeight <= dialogHeight && hasItems && cummulativeHeight > 0) {
       dialog.style.height = cummulativeHeight;
     } else {
@@ -191,7 +201,7 @@ function Selector(selector) {
     }
   }
 
-  People(list);
+  updateList(list);
 }
 
 var list = [];
