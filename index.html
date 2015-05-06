@@ -1,7 +1,7 @@
 <html>
-<head>
-  <link rel="stylesheet/less" type="text/css" href="styles/main.less">
-  <script>
+  <head>
+    <link rel="stylesheet/less" type="text/css" href="styles/main.less">
+    <script>
     less = {
       env: "development",
       async: false,
@@ -11,13 +11,50 @@
       dumpLineNumbers: "comments",
       relativeUrls: false
     };
-  </script>
-  <script src="js/less.js" type="text/javascript"></script>
-</head>
-<body>
-<div class="selector"><input type="text" placeholder="Search" /></div><div class="dialog"><ul></ul></div>
-<p>Some text here</p>
-<div class="selector"><input type="text" placeholder="Add people" /></div><div class="dialog"><ul></ul></div>
-<script src="js/main.js"></script>
-</body>
+    </script>
+    <script src="js/less.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="multiselect">
+      <div class="imgs"></div>
+      <div>
+        <span class="title">Выбираем пользователей отсюда:</span>
+        <div class="selector">
+          <input type="text" placeholder="Найди меня" />
+        </div>
+        <div class="dialog">
+          <ul></ul>
+        </div>
+      </div>
+    </div>
+    <p>Реализовать UI дропдаун, который в зависимости от параметров инициализации позволяет:
+      <ul>
+        <li>выбирать только один пункт из списка;</li>
+        <li>выбирать несколько пунктов из списка (multiselect);</li>
+        <li>использовать autocomplete для фильтрации пунктов списка по набранному префиксу (при этом фильтрация должна учитывать все варианты неправильной раскладки, т.е. Андрей Рогозов должен подсказываться по любой из четырех подстрок "рого", "hjuj", "rogo", кщпщ'');</li>
+        <li>выполнять запрос на сервер для расширенного поиска в режиме реального времени (например, хотим искать не только по именам пользователя, но и по домену, при этом имена и фамилии есть в дропдауне на клиенте, а домен лежит только на сервере);</li>
+        <li>отображать или нет аватарки пользователей в списке.</li>
+      </ul>
+    </p>
+    <p>Все параметры могут указываться независимо друг от друга.
+    Для запроса на сервер необходимо реализовать простой API, который по подстроке возвращает необходимые данные также с учетом неправильных раскладок.</p>
+    <p>Требования к реализации: javascript, использование jquery не желательно, код должен быть кросс-браузерным и работать во всех современных браузерах, а также msie8+ и opera 12.16.
+    Нужно учесть, что таких дропдаунов может быть несколько на странице.
+    </p>
+    <div class="multiselect">
+      <div class="imgs"></div>
+      <div>
+        <span class="title">Дополнительно подключаем здесь:</span>
+        <div class="selector">
+          <input type="text" placeholder="Кликаем и ищем" />
+        </div>
+        <div class="dialog">
+          <ul></ul>
+        </div>
+      </div>
+    </div>
+    <p>За основу дизайна можно взять дропдаун из диалогов <a href="https://vk.com/im?sel=-3">https://vk.com/im?sel=-3</a>
+    <p>В результате — ссылка на гитхаб и развёрнутое демо со списком пользователей, в котором поиск по именам и фамилиям необходимо осуществлять на клиенте, а для поиска по домену отправлять запрос на сервер.</p>
+    <script src="js/main.js"></script>
+  </body>
 </html>

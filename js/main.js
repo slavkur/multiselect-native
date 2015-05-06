@@ -2,7 +2,52 @@ var keyDown = 40;
 var keyUp = 38;
 var keyEnter = 13;
 
+$ = function(el) {
+  // most annoying in native javascript is working with dom
+  // we are interested in tag element and not in texnodes
+  return {
+    get: function() {
+      return el;
+    },
+    parent: function() {
+      return $(el.parentNode);
+    },
+    removeClass: function(cls) {
+      el.className = el.className.replace(new RegExp(" \\b" + cls + "\\b"), '');
+      return $(el);
+    },
+    addClass: function(cls) {
+      this.removeClass(cls);
+      el.className += ' ' + cls;
+      return $(el);
+    },
+    first: function() {
+      if (el.firstChild && !(el.firstChild instanceof HTMLElement)) {
+        return $(el.firstChild.nextSibling);
+      } else {
+        return $(el.firstChild);
+      }
+    },
+    next: function() {
+      if (el.nextSibling && !(el.nextSibling instanceof HTMLElement)) {
+        return $(el.nextSibling.nextSibling);
+      } else {
+        return $(el.nextSibling);
+      }
+    },
+    prev: function() {
+      if (el.previousSibling && !(el.previousSibling instanceof HTMLElement)) {
+        return $(el.previousSibling.previousSibling);
+      } else {
+        return $(el.previousSibling);
+      }
+    }
+  }
+};
+
+// cross browser ajax request objects 
 var XMLHttpFactories = [
+
   function() {
     return new XMLHttpRequest()
   },
@@ -53,14 +98,15 @@ function Selector(selector) {
   var dialogHeight;
   var selectedPerson;
   var added = [];
-  var filter = selector.firstChild;
-  var dialog = selector.nextSibling;
-  var dialogList = dialog.firstChild;
+  var imgs = $(selector).parent().prev().get();
+  var filter = $(selector).first().get();
+  var dialog = $(selector).next().get();
+  var dialogList = $(dialog).first().get();
   var bodyBlur = function(e) {
     dialog.style.display = 'none';
   };
   // multiinstance events
-  if(document.body.onclick instanceof Function) {
+  if (document.body.onclick instanceof Function) {
     var bodyClick = document.body.onclick;
     document.body.onclick = function() {
       bodyClick();
@@ -87,21 +133,24 @@ function Selector(selector) {
     // clear all opened dialogs by bluring
     document.body.onclick();
     dialog.style.display = 'block';
+    dialog.scrollTop = 0;
     dialogHeight = dialog.clientHeight;
   };
   filter.onkeydown = function(e) {
     // key navigation support, arrow up/down with proper scrolling
-    if (keyDown === e.keyCode && selectedPerson.nextSibling) {
+    if (keyDown === e.keyCode && $(selectedPerson).next().get()) {
       selectedPerson.removeAttribute('class');
-      selectedPerson.nextSibling.setAttribute('class', 'selected');
-      selectedPerson = selectedPerson.nextSibling;
+      var nextSibling = $(selectedPerson).next().get();
+      nextSibling.setAttribute('class', 'selected');
+      selectedPerson = nextSibling;
       if (dialog.clientHeight + dialog.scrollTop - selectedPerson.clientHeight < selectedPerson.offsetTop) {
         dialog.scrollTop += selectedPerson.clientHeight;
       }
-    } else if (keyUp === e.keyCode && selectedPerson.previousSibling) {
+    } else if (keyUp === e.keyCode && $(selectedPerson).prev().get()) {
       selectedPerson.removeAttribute('class');
-      selectedPerson.previousSibling.setAttribute('class', 'selected');
-      selectedPerson = selectedPerson.previousSibling;
+      var previousSibling = $(selectedPerson).prev().get();
+      previousSibling.setAttribute('class', 'selected');
+      selectedPerson = previousSibling;
       if (dialog.scrollTop > selectedPerson.offsetTop) {
         dialog.scrollTop -= selectedPerson.clientHeight;
       }
@@ -109,38 +158,52 @@ function Selector(selector) {
       var person = document.createElement('div');
       var label = document.createElement('label');
       var del = document.createElement('i');
+      var img = document.createElement('img');
 
       del.innerHTML = "x";
-      del.onclick = function(e) {
-        // stop bubbling to prevent focusing on selector
-        e.stopPropagation();
-        selector.removeChild(person);
-        added.splice(added.indexOf(e.target.previousSibling.innerHTML), 1);
-        clearFilter();
-      };
+      // custing img instance for click event
+      (function(img) {
+        del.onclick = function(e) {
+          // stop bubbling to prevent focusing on selector
+          e.stopPropagation();
+          selector.removeChild(person);
+          added.splice(added.indexOf($(e.target).prev().get().innerHTML), 1);
+          imgs.removeChild(img);
+          clearFilter();
+        };
+      })(img);
+
       person.appendChild(label);
       person.appendChild(del);
+      imgs.appendChild(img);
       selector.insertBefore(person, filter);
-      label.innerHTML = selectedPerson.innerHTML;
-      added.push(selectedPerson.innerHTML);
+      label.innerHTML = $(selectedPerson).first().next().get().innerHTML;
+      img.src = $(selectedPerson).first().get().src;
+      added.push(label.innerHTML);
 
       clearFilter();
     }
   };
   filter.onkeyup = function(e) {
+    var personMame, imgSrc;
     // text filtering if no arrows for navigation used
     if (e.keyCode !== keyDown && e.keyCode !== keyUp) {
       filtered = [];
       // first we check local data received with initial request
       for (var i = 0; i < list.length; i++) {
-        if (list[i].toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) {
-          filtered.push(list[i]);
+        personMame = list[i].name;
+        imgSrc = list[i].imgSrc;
+        if (personMame.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1) {
+          filtered.push({
+            imgSrc: imgSrc,
+            name: personMame
+          });
         }
       }
       if (e.target.value.length === 0) {
         updateList(list);
-      } else if(filtered.length === 0) {
-        request('/api/people/'+ e.target.value, function(http, jsonResp) {
+      } else if (filtered.length === 0) {
+        request('/api/people/' + e.target.value, function(http, jsonResp) {
           updateList(jsonResp);
         });
       } else {
@@ -150,18 +213,31 @@ function Selector(selector) {
   }
 
   function clearFilter() {
+    // cleanup method after selection is done
     document.body.onclick();
     filter.blur();
     filter.value = '';
     updateList(list);
+
+    $(imgs).removeClass('four').removeClass('two');
+    if (imgs.childNodes.length > 2) {
+      $(imgs).addClass('four');
+    } else if (imgs.childNodes.length === 2) {
+      $(imgs).addClass('two');
+    }
   }
 
   function updateList(list) {
-    var cummulativeHeight = 0;
+    var cummulativeHeight = 0, iterator = 0,
+      person, personMame, imgSrc;
     dialogList.innerHTML = '';
     for (var i = 0; i < list.length; i++) {
-      if(added.indexOf(list[i]) === -1) {
-        var person = document.createElement('li');
+      personMame = list[i].name;
+      imgSrc = list[i].imgSrc;
+      if (added.indexOf(personMame) === -1) {
+        person = document.createElement('li');
+        var name = document.createElement('span');
+        var avatar = document.createElement('img');
         // self execution function to ensure the right 'person' is used
         (function(person) {
           person.onmouseover = function() {
@@ -175,26 +251,32 @@ function Selector(selector) {
             });
           };
         })(person);
-        person.innerHTML = list[i];
+        avatar.src = imgSrc;
+        name.innerHTML = personMame;
+        person.appendChild(avatar);
+        person.appendChild(name);
         dialogList.appendChild(person);
         cummulativeHeight += person.clientHeight;
-        if (i === 0) {
-          selectedPerson = person;
-          person.setAttribute('class', 'selected');
-        }
+        iterator++;
       }
     }
-    adjustDialogHeight(cummulativeHeight, list.length > 0);
+    person = $(dialogList).first().get();
+    if (person) {
+      selectedPerson = person;
+      person.setAttribute('class', 'selected');
+    }
+
+    adjustDialogHeight(cummulativeHeight, iterator > 0);
   }
 
   function adjustDialogHeight(cummulativeHeight, hasItems) {
-    if(cummulativeHeight <= dialogHeight && hasItems && cummulativeHeight > 0) {
+    if (cummulativeHeight <= dialogHeight && hasItems && cummulativeHeight > 0) {
       dialog.style.height = cummulativeHeight;
     } else {
       dialog.style.height = null;
     }
     // to avoid interaption wuth selector>dialog
-    if(!hasItems) {
+    if (!hasItems) {
       dialog.style.visibility = 'hidden';
     } else {
       dialog.style.visibility = null;

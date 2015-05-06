@@ -7,66 +7,111 @@ html, body {
   line-height: 1.5;
   box-sizing: border-box;
 }
-ul {
-  width: 100%;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-
-  li {
-    padding-left: 5px;
-    cursor: pointer;
-
-    &.selected {
-      background: #ccc;
-    }
-  }
-}
-.selector {
-  cursor: text;
+.multiselect {
   display: flex;
-  flex-wrap: wrap;
-  width: 384px;
-  border: 1px solid #ccc;
-  padding-bottom: 3px;
+  align-items: flex-start;
 
-  input {
-    padding: 2px;
-    border: 0;
-    width: 100%;
-    margin: 3px 0 0 3px;
-    outline: none;
-  }
-  div {
-    background: #666;
-    color: #fff;
-    white-space: nowrap;
-    padding: 2px;
-    margin: 3px 0 0 3px;
+  .imgs {
+    width: 48px;
+    height: 48px;
+    margin-right: 5px;
+    background: #efefef;
+    overflow: hidden;
 
-    & + input {
-      width: 120px;
-    }
-    label {
+    &.two {
       white-space: nowrap;
+      & img:first-child {
+        margin-left: -25px;
+      }
+    }
 
-      & + i {
-        margin-left: 2px;
-        font-style: normal;
-        font-weight: bold;
-        cursor: pointer;
-        padding: 4px;
+    &.four img {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .title {
+    position: relative;
+    top: -2px;
+  }
+
+  .selector {
+    cursor: text;
+    display: flex;
+    flex-wrap: wrap;
+    width: 384px;
+    border: 1px solid #ccc;
+    padding-bottom: 3px;
+    min-height: 25px;
+
+    input {
+      padding: 2px;
+      border: 0;
+      width: 100%;
+      margin: 3px 0 0 3px;
+      outline: none;
+    }
+    div {
+      background: #666;
+      color: #fff;
+      white-space: nowrap;
+      padding: 2px;
+      margin: 3px 0 0 3px;
+
+      & + input {
+        width: 120px;
+      }
+      label {
+        white-space: nowrap;
+
+        & + i {
+          margin-left: 2px;
+          font-style: normal;
+          font-weight: bold;
+          cursor: pointer;
+          padding: 4px;
+        }
       }
     }
   }
-}
-.dialog {
-  background: #fff;
-  position: absolute;
-  border: 1px solid #ccc;
-  border-top: 0;
-  width: 384px;
-  height: 200px;
-  overflow-y: auto;
-  display: none;
+  .dialog {
+    background: #fff;
+    position: absolute;
+    z-index: 1;
+    border: 1px solid #ccc;
+    border-top: 0;
+    width: 384px;
+    height: 200px;
+    overflow-y: auto;
+    display: none;
+
+    ul {
+      width: 100%;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        cursor: pointer;
+        padding: 5px;
+        background: #fff;
+
+        img {
+          //zoom: 50%;
+          height: 30px;
+        }
+
+        span {
+          margin-left: 5px;
+          position: relative;
+          top: -10px;
+        }
+
+        &.selected {
+          background: #ccc;
+        }
+      }
+    }
+  }
 }

@@ -4,6 +4,7 @@ var server = express();
 server.engine('html', require('ejs').renderFile);
 server.use('/js', express.static(__dirname + '/js'));
 server.use('/styles', express.static(__dirname + '/styles'));
+server.use('/img', express.static(__dirname + '/img'));
 
 server.get('/', function(req, res) {
   res.render(__dirname + '/index.html');
@@ -65,54 +66,80 @@ function filterPeople(query) {
   people.forEach(function(item) {
     if(item.name.toLowerCase().indexOf(query) > -1 || 
        item.name.toLowerCase().indexOf(transcode(query)) > -1) {
-      filtered.push(item.name);
+      filtered.push({
+        imgSrc: getImgSrc(item),
+        name: item.name
+      });
     } else if(item.domain && 
       (item.domain.toLowerCase().indexOf(query) > -1  ||
        item.domain.toLowerCase().indexOf(transcode(query)) > -1)) {
-      filtered.push(item.name);
+      filtered.push({
+        imgSrc: getImgSrc(item),
+        name: item.name
+      });
     }
   });
   return filtered;
 }
 
+function getImgSrc(item) {
+  // for customization
+  return '/img/' + item.id + '.jpg';
+}
+
 var people = [{
+    id: 'nDmbElUhNG4',
     name: "Vladimir Evseenkov",
     domain: "hellovlad"
   }, {
+    id: '3uLlirjgUL4',
     name: "Sofya Kurkova",
     domain: "sofa"
   }, {
+    id: 'ixYA1tZ2XLU',
     name: "Lisa Bobrykava"
   }, {
+    id: 'XAA4CCzly74',
     name: "Sergey Scherbakov"
   }, {
-    name: "Stanislav Zinovyev"
-  }, {
+    id: 'dZ3GIm4eVDw',
     name: "Arturo Latypov"
   }, {
+    id: 'kp7yCH_mack',
     name: "Andrey Zhadanov"
   }, {
+    id: 'JVM4llh1VvQ',
     name: "Maria Prikhodko"
   }, {
+    id: 'bjMUYOjV5ss',
     name: "Kristina Kolyakina"
   }, {
+    id: '2NTsUefn8hk',
     name: "Timur Novikov"
   }, {
+    id: 'IZGaCpQZTMA',
     name: "Alex Frants"
   }, {
+    id: 'e_0830efdf',
     name: "Vladislav Guskov",
     domain: 'rus123'
   }, {
+    id: 'GfGEQytLxxs',
     name: "Artur Bekirov"
   }, {
+    id: 'Wu8gRdsU434',
     name: "Mikhail Yatsyk"
   }, {
+    id: 'e_e5fabad6',
     name: "Maxim Usik"
   }, {
+    id: 'AMus-kJkuy8',
     name: "Zoychik Bogach"
   }, {
+    id: 'F2nuF1oxuUY',
     name: "Svetlana Gusterina"
   }, {
+    id: 'htXZhiCPXiE',
     name: "Masha Petrova"
   } 
 ];
@@ -120,5 +147,9 @@ var people = [{
 // list for all people needed as the start
 var listAll = [];
 people.forEach(function(item) {
-  listAll.push(item.name);
+  listAll.push({
+    imgSrc: getImgSrc(item),
+    name: item.name
+  });
 });
+
