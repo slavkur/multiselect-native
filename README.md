@@ -11,11 +11,11 @@ Then you can access your browser with url: http://localhost:8080
 
 
 ## Basic structure
-Component consist of avatars preview window, selector and dialog. There are some options to customize it.
+Component consists of preview window for avatars, filter selector and dropdown dialog. There are some options to customize it. When no options added component will be rendered with minimum required functionality.
 ### data-multiple
-Allows to have multiple selected users
+Allows to multiselect users
 ### data-autocomplete
-Allows type and filter functionality
+Allows to have 'type and filter' functionality
 ### data-remote
 Includes Ajax request for additional search by user's domain
 ### data-imgs
