@@ -1,6 +1,8 @@
 var keyDown = 40;
 var keyUp = 38;
 var keyEnter = 13;
+var keyShift = 16;
+var keyTab = 9;
 
 $ = function(el) {
   // most annoying in native javascript is working with dom
@@ -99,6 +101,7 @@ function renderMultiSelects(cls) {
   }
 }
 
+// for detailed instructions on options please review README file
 function MultiSelect(multiselect) {
   var filtered;
   var dialogHeight;
@@ -209,7 +212,7 @@ function MultiSelect(multiselect) {
 
       clearFilter();
     }
-    if(!dataAllowAutoComplete) {
+    if(!dataAllowAutoComplete && e.keyCode !== keyShift && e.keyCode !== keyTab) {
       e.preventDefault && e.preventDefault();
     }
   };

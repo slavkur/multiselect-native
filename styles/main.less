@@ -29,6 +29,15 @@ html, body {
   &.hideFilterText {
     .selector {
       cursor: pointer;
+
+      &::before {
+        content: "\25bc";
+        color: #eee;
+        top: 5px;
+        position: absolute;
+        right: 10px;
+      }
+      
       input {
         cursor: pointer;
         &:focus {
@@ -40,6 +49,9 @@ html, body {
 
   &.hideFilter .selector {
     cursor: default;
+    &::before {
+      display: none;
+    }
     input {
       visibility: hidden;
     }
@@ -79,14 +91,6 @@ html, body {
     border: 1px solid #ccc;
     padding-bottom: 3px;
     min-height: 25px;
-
-    &::before {
-      content: "\25bc";
-      color: #eee;
-      top: 5px;
-      position: absolute;
-      right: 10px;
-    }
 
     input {
       padding: 2px;
