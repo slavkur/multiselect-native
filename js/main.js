@@ -28,6 +28,13 @@ $ = function(el) {
         return $(el.firstChild);
       }
     },
+    last: function() {
+      if (el.lastChild && !(el.lastChild instanceof HTMLElement)) {
+        return $(el.lastChild.previousSibling);
+      } else {
+        return $(el.lastChild);
+      }
+    },
     next: function() {
       if (el.nextSibling && !(el.nextSibling instanceof HTMLElement)) {
         return $(el.nextSibling.nextSibling);
@@ -47,18 +54,17 @@ $ = function(el) {
 
 // cross browser ajax request objects 
 var XMLHttpFactories = [
-
   function() {
-    return new XMLHttpRequest()
+    return new XMLHttpRequest();
   },
   function() {
-    return new ActiveXObject("Msxml2.XMLHTTP")
+    return new ActiveXObject("Msxml2.XMLHTTP");
   },
   function() {
-    return new ActiveXObject("Msxml3.XMLHTTP")
+    return new ActiveXObject("Msxml3.XMLHTTP");
   },
   function() {
-    return new ActiveXObject("Microsoft.XMLHTTP")
+    return new ActiveXObject("Microsoft.XMLHTTP");
   }
 ];
 
@@ -86,22 +92,42 @@ function request(url, callback) {
   http.send(null);
 }
 
-function renderSelectors(cls) {
-  var selectors = document.getElementsByClassName(cls);
-  for (var i = 0; i < selectors.length; i++) {
-    Selector(selectors[i]);
+function renderMultiSelects(cls) {
+  var multiselects = document.getElementsByClassName(cls);
+  for (var i = 0; i < multiselects.length; i++) {
+    MultiSelect(multiselects[i]);
   }
 }
 
-function Selector(selector) {
+function MultiSelect(multiselect) {
   var filtered;
   var dialogHeight;
   var selectedPerson;
   var added = [];
+  var selector = $(multiselect).last().last().prev().get();
   var imgs = $(selector).parent().prev().get();
   var filter = $(selector).first().get();
   var dialog = $(selector).next().get();
   var dialogList = $(dialog).first().get();
+  var dataAllowMultiple = false;
+  var dataAllowAutoComplete = false;
+  var dataAllowRemote = false;
+
+  if(multiselect.getAttribute('data-imgs') === null) {
+    $(multiselect).addClass('hideImgs');
+  }
+  if(multiselect.getAttribute('data-multiple') !== null) {
+    dataAllowMultiple = true;
+  }
+  if(multiselect.getAttribute('data-autocomplete') === null) {
+    $(multiselect).addClass('hideFilterText');
+  } else {
+    dataAllowAutoComplete = true;
+  }
+  if(multiselect.getAttribute('data-remote') !== null) {
+    dataAllowRemote = true;
+  }
+
   var bodyBlur = function(e) {
     dialog.style.display = 'none';
   };
@@ -183,6 +209,9 @@ function Selector(selector) {
 
       clearFilter();
     }
+    if(!dataAllowAutoComplete) {
+      e.preventDefault && e.preventDefault();
+    }
   };
   filter.onkeyup = function(e) {
     var personMame, imgSrc;
@@ -202,7 +231,7 @@ function Selector(selector) {
       }
       if (e.target.value.length === 0) {
         updateList(list);
-      } else if (filtered.length === 0) {
+      } else if (filtered.length === 0 && dataAllowRemote) {
         request('/api/people/' + e.target.value, function(http, jsonResp) {
           updateList(jsonResp);
         });
@@ -218,6 +247,12 @@ function Selector(selector) {
     filter.blur();
     filter.value = '';
     updateList(list);
+
+    if(dataAllowMultiple || added.length === 0) {
+      $(multiselect).removeClass('hideFilter');
+    } else {
+      $(multiselect).addClass('hideFilter');
+    }
 
     $(imgs).removeClass('four').removeClass('two');
     if (imgs.childNodes.length > 2) {
@@ -279,7 +314,7 @@ function Selector(selector) {
     if (!hasItems) {
       dialog.style.visibility = 'hidden';
     } else {
-      dialog.style.visibility = null;
+      dialog.style.visibility = 'visible';
     }
   }
 
@@ -289,5 +324,5 @@ function Selector(selector) {
 var list = [];
 request('/api/people', function(http, jsonResp) {
   list = jsonResp;
-  renderSelectors('selector');
+  renderMultiSelects('multiselect');
 });
